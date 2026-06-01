@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
@@ -65,3 +65,33 @@ def register_user(request):
     user.save()
 
     return JsonResponse({'user': _user_response(user)}, status=201)
+
+
+@csrf_exempt
+@require_POST
+def login_user(request):
+    payload = _parse_json_body(request)
+    if payload is None:
+        return JsonResponse({'error': 'Invalid JSON body'}, status=400)
+
+    identifier = (payload.get('email') or payload.get('username') or '').strip()
+    password = payload.get('password') or ''
+
+    if not identifier or not password:
+        return JsonResponse({'error': 'Email or username and password are required'}, status=400)
+
+    username = identifier
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(email__iexact=identifier)
+        username = user.get_username()
+    except User.DoesNotExist:
+        pass
+
+    user = authenticate(request, username=username, password=password)
+    if user is None:
+        return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+    login(request, user)
+    return JsonResponse({'user': _user_response(user)})
