@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:15
+    container_name: vet_app_database
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: supertajnehaslo
+      POSTGRES_DB: vet_app_production
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db_data:
