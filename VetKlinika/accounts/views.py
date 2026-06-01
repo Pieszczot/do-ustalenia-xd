@@ -5,7 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 
 def _parse_json_body(request):
@@ -95,3 +95,14 @@ def login_user(request):
 
     login(request, user)
     return JsonResponse({'user': _user_response(user)})
+
+
+@require_GET
+def current_user(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'authenticated': False})
+
+    return JsonResponse({
+        'authenticated': True,
+        'user': _user_response(request.user),
+    })
