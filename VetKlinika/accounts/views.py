@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
@@ -95,6 +95,14 @@ def login_user(request):
 
     login(request, user)
     return JsonResponse({'user': _user_response(user)})
+
+
+@require_POST
+def logout_user(request):
+    if request.user.is_authenticated:
+        logout(request)
+
+    return JsonResponse({'authenticated': False})
 
 
 @require_GET
