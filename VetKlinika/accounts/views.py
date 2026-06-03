@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 
@@ -98,6 +98,7 @@ def login_user(request):
 
 
 @require_GET
+@ensure_csrf_cookie
 def current_user(request):
     if not request.user.is_authenticated:
         return JsonResponse({'authenticated': False})
