@@ -5,7 +5,6 @@ import Home from './pages/Home';
 import Booking from './pages/Booking';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Settings from './pages/Settings';
 
 export default function App() {
   return (
@@ -18,11 +17,6 @@ export default function App() {
           <Route path="/rezerwacja" element={
             <ProtectedRoute>
               <Booking />
-            </ProtectedRoute>
-          } />
-          <Route path="/ustawienia" element={
-            <ProtectedRoute>
-              <Settings />
             </ProtectedRoute>
           } />
         </Routes>
