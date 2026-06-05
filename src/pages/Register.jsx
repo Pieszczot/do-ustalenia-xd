@@ -29,8 +29,8 @@ export default function Register() {
       setError('Hasła nie są identyczne.');
       return;
     }
-    if (form.password.length < 6) {
-      setError('Hasło musi mieć co najmniej 6 znaków.');
+    if (form.password.length < 8) {
+      setError('Hasło musi mieć co najmniej 8 znaków.');
       return;
     }
 
@@ -97,7 +97,7 @@ export default function Register() {
               <input
                 type="password"
                 name="password"
-                placeholder="min. 6 znaków"
+                placeholder="min. 8 znaków"
                 value={form.password}
                 onChange={handleChange}
                 required

@@ -4,6 +4,6 @@ from .views import create_pet, create_reservation
 
 
 urlpatterns = [
-    path('pets/', create_pet, name='pet-create'),
-    path('reservations/', create_reservation, name='reservation-create'),
+    path('bookings', create_reservation, name='booking-create'),
+    path('pets', create_pet, name='pet-create'),
 ]

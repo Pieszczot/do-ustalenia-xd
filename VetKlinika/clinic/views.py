@@ -116,6 +116,27 @@ def create_reservation(request):
     if payload is None:
         return JsonResponse({'error': 'Invalid JSON body'}, status=400)
 
+    frontend_payload = 'serviceId' in payload
+    if frontend_payload:
+        pet_errors = {}
+        pet_name = _required_text(payload, 'petName', pet_errors)
+        pet_species = _required_text(payload, 'petType', pet_errors)
+        if pet_errors:
+            return JsonResponse({'errors': pet_errors}, status=400)
+
+        pet, _created = Pet.objects.get_or_create(
+            user=request.user,
+            name=pet_name,
+            species=pet_species,
+        )
+        payload = {
+            'pet_id': pet.id,
+            'service_id': payload.get('serviceId'),
+            'reservation_date': payload.get('date'),
+            'reservation_time': payload.get('time'),
+            'problem_description': payload.get('notes'),
+        }
+
     errors = {}
     pet_id = _required_int(payload, 'pet_id', errors)
     service_id = _required_int(payload, 'service_id', errors)
@@ -186,5 +207,8 @@ def create_reservation(request):
         reservation_time=reservation_time,
         problem_description=problem_description,
     )
+
+    if frontend_payload:
+        return JsonResponse({'success': True, 'id': reservation.id}, status=201)
 
     return JsonResponse({'reservation': _reservation_response(reservation)}, status=201)

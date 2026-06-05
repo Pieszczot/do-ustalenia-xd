@@ -1,15 +1,17 @@
 import { mockSlots } from '../mocks/appointments';
 import { USE_MOCK, API_URL } from '../config';
 
-export async function getAvailableSlots(date) {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 400));
-    return mockSlots[date] || [];
-  }
+function getCookie(name) {
+  const value = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(`${name}=`));
 
-  const res = await fetch(`${API_URL}/slots?date=${date}`);
-  if (!res.ok) throw new Error('Błąd pobierania terminów');
-  return res.json();
+  return value ? decodeURIComponent(value.split('=')[1]) : '';
+}
+
+export async function getAvailableSlots(date) {
+  await new Promise((r) => setTimeout(r, 400));
+  return mockSlots[date] || [];
 }
 
 export async function createBooking(bookingData) {
@@ -21,9 +23,10 @@ export async function createBooking(bookingData) {
 
   const res = await fetch(`${API_URL}/bookings`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('vet_token')}`,
+      'X-CSRFToken': getCookie('csrftoken'),
     },
     body: JSON.stringify(bookingData),
   });
