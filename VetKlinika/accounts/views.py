@@ -1,10 +1,10 @@
 import json
 
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 
@@ -97,7 +97,16 @@ def login_user(request):
     return JsonResponse({'user': _user_response(user)})
 
 
+@require_POST
+def logout_user(request):
+    if request.user.is_authenticated:
+        logout(request)
+
+    return JsonResponse({'authenticated': False})
+
+
 @require_GET
+@ensure_csrf_cookie
 def current_user(request):
     if not request.user.is_authenticated:
         return JsonResponse({'authenticated': False})
