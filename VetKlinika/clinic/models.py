@@ -24,6 +24,18 @@ class Pet(models.Model):
 
 
 class Reservation(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_CONFIRMED = 'confirmed'
+    STATUS_COMPLETED = 'completed'
+    STATUS_CANCELLED = 'cancelled'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Oczekuje'),
+        (STATUS_CONFIRMED, 'Potwierdzona'),
+        (STATUS_COMPLETED, 'Zakonczona'),
+        (STATUS_CANCELLED, 'Anulowana'),
+    ]
+
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -43,7 +55,7 @@ class Reservation(models.Model):
     reservation_date = models.DateField()
     reservation_time = models.TimeField()
     problem_description = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=50, default='pending')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_PENDING)
 
     class Meta:
         managed = False
