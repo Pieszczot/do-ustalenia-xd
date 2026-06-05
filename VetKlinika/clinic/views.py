@@ -174,11 +174,17 @@ def create_reservation(request):
         if pet_errors:
             return JsonResponse({'errors': pet_errors}, status=400)
 
-        pet, _created = Pet.objects.get_or_create(
+        pet = Pet.objects.filter(
             user=request.user,
-            name=pet_name,
-            species=pet_species,
-        )
+            name__iexact=pet_name,
+            species__iexact=pet_species,
+        ).order_by('id').first()
+        if pet is None:
+            pet = Pet.objects.create(
+                user=request.user,
+                name=pet_name,
+                species=pet_species,
+            )
         payload = {
             'pet_id': pet.id,
             'service_id': payload.get('serviceId'),
