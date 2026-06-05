@@ -97,6 +97,7 @@ def login_user(request):
     return JsonResponse({'user': _user_response(user)})
 
 
+@csrf_exempt
 @require_POST
 def logout_user(request):
     if request.user.is_authenticated:
