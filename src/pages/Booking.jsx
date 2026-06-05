@@ -2,9 +2,11 @@ import { useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getPrices } from '../services/pricesService';
 import { getAvailableSlots, createBooking } from '../services/bookingService';
+import { useAuth } from '../context/AuthContext';
 import './Booking.css';
 
 export default function Booking() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const serviceId = Number(searchParams.get('service'));
 
@@ -22,6 +24,17 @@ export default function Booking() {
   const [bookingId, setBookingId] = useState(null);
 
   const today = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || fullName,
+      email: prev.email || user.email || '',
+    }));
+  }, [user]);
 
   useEffect(() => {
     getPrices().then((data) => {

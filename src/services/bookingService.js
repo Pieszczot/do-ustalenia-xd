@@ -9,9 +9,25 @@ function getCookie(name) {
   return value ? decodeURIComponent(value.split('=')[1]) : '';
 }
 
+async function getCsrfToken() {
+  let token = getCookie('csrftoken');
+  if (token) return token;
+
+  await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+  return getCookie('csrftoken');
+}
+
 export async function getAvailableSlots(date) {
-  await new Promise((r) => setTimeout(r, 400));
-  return mockSlots[date] || [];
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 400));
+    return mockSlots[date] || [];
+  }
+
+  const res = await fetch(`${API_URL}/slots?date=${encodeURIComponent(date)}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Błąd pobierania terminów');
+  return res.json();
 }
 
 export async function createBooking(bookingData) {
@@ -26,7 +42,7 @@ export async function createBooking(bookingData) {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRFToken': getCookie('csrftoken'),
+      'X-CSRFToken': await getCsrfToken(),
     },
     body: JSON.stringify(bookingData),
   });

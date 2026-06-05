@@ -1,8 +1,9 @@
 import json
+from datetime import datetime, time, timedelta
 
 from django.http import JsonResponse
 from django.utils.dateparse import parse_date, parse_time
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from services.models import Service
 
@@ -78,6 +79,55 @@ def _required_text(payload, field_name, errors):
         return None
 
     return value
+
+
+def _working_hours(reservation_date):
+    weekday = reservation_date.weekday()
+
+    if weekday < 5:
+        return time(8, 0), time(18, 0)
+
+    if weekday == 5:
+        return time(9, 0), time(14, 0)
+
+    return None
+
+
+def _slot_times(start_time, end_time):
+    current = datetime.combine(datetime.today(), start_time)
+    end = datetime.combine(datetime.today(), end_time)
+
+    while current + timedelta(minutes=30) <= end:
+        yield current.time()
+        current += timedelta(minutes=30)
+
+
+@require_GET
+def available_slots(request):
+    date_raw = request.GET.get('date')
+    reservation_date = parse_date(date_raw.strip()) if isinstance(date_raw, str) else None
+    if reservation_date is None:
+        return JsonResponse({'errors': {'date': 'Use YYYY-MM-DD format.'}}, status=400)
+
+    hours = _working_hours(reservation_date)
+    if hours is None:
+        return JsonResponse([], safe=False)
+
+    taken_times = set(
+        Reservation.objects
+        .filter(reservation_date=reservation_date)
+        .values_list('reservation_time', flat=True)
+    )
+
+    slots = [
+        {
+            'time': slot_time.strftime('%H:%M'),
+            'available': slot_time not in taken_times,
+        }
+        for slot_time in _slot_times(*hours)
+    ]
+
+    return JsonResponse(slots, safe=False)
 
 
 @require_POST
@@ -164,6 +214,10 @@ def create_reservation(request):
         or reservation_time.microsecond != 0
     ):
         errors['reservation_time'] = 'Reservation time must be in 30-minute slots.'
+    elif reservation_date is not None:
+        hours = _working_hours(reservation_date)
+        if hours is None or reservation_time not in set(_slot_times(*hours)):
+            errors['reservation_time'] = 'Reservation time is outside working hours.'
 
     problem_description = payload.get('problem_description')
     if problem_description in ('', None):
