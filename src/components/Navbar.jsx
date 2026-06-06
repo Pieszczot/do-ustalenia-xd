@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
@@ -33,9 +33,29 @@ export default function Navbar() {
       </Link>
 
       <ul className={`navbar-links ${menuOpen ? 'open' : ''}`}>
-        <li><NavLink to="/" end onClick={() => setMenuOpen(false)}>Strona główna</NavLink></li>
-        <li><a href="#jak-to-dziala" onClick={(e) => handleAnchorClick(e, '#jak-to-dziala')}>Jak to działa</a></li>
-        <li><a href="#cennik" onClick={(e) => handleAnchorClick(e, '#cennik')}>Cennik</a></li>
+        <li>
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              setMenuOpen(false);
+              navigate('/');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
+            Strona główna
+          </a>
+        </li>
+        <li>
+          <a href="#jak-to-dziala" onClick={(e) => handleAnchorClick(e, '#jak-to-dziala')}>
+            Jak to działa
+          </a>
+        </li>
+        <li>
+          <a href="#cennik" onClick={(e) => handleAnchorClick(e, '#cennik')}>
+            Cennik
+          </a>
+        </li>
       </ul>
 
       <div className="navbar-right">
@@ -68,4 +88,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
